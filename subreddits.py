@@ -1,0 +1,20 @@
+known = {
+    "AustraliaPics": "Australia",
+    "britpics": "Great Britain",
+    "ChinaPics": "China",
+    "ExplorePakistan": "Pakistan",
+    "FrancePics": "France",
+    "GermanyPics": "Germany",
+    "IncredibleIndia": "India",
+    "Island": "Iceland",
+    "ItalyPhotos": "Italy",
+    "japanpics": "Japan",
+    "NetherlandsPics": "Netherlands",
+    "NorwayPics": "Norway",
+    "NZPhotos": "New Zealand",
+    "RussiaPics": "Russia",
+    "schweiz": "Switzerland",
+    "SwedenPics": "Sweden",
+    "TrueNorthPictures": "Canada",
+    "unitedstatesofamerica": "USA"
+}

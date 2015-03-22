@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import datetime
+from subreddits import known
 import praw
 import HTMLParser
 import urllib, urllib2, urlparse
@@ -63,19 +64,32 @@ def get_coordinates(location):
     return j["results"][0]["geometry"]["location"]
 
 def get_data(limit):
-    print "Execution time:", datetime.datetime.now()
+    print "Time of execution:", datetime.datetime.now()
     print "Limit:", limit
     ret = []
     print "Fetching Reddit posts"
+    print "-"*80
     for post in get_hot_posts(limit):
         print "Processing:", post.title, ("-- from /r/" + post.subreddit.__str__())
         append = []
         nlp = get_nlp(post.title)
-        location = " ".join([e.string for e in nlp.find_all(["organization", "location"])])
-        # TODO: insert country based on subreddit
+        orgsandlocs = nlp.find_all(["organization", "location"])
+        # insert country based on subreddit
+        country = ""
+        if post.subreddit.__str__() in known:
+            print "Found a country-related subreddit:", country
+            if country in orgsandlocs:
+                print "Not necessary to add country to location string"
+            else:
+                print "Adding country to location string"
+                country = known[post.subreddit.__str__()]
+        # find coords
+        location = " ".join([e.string for e in orgsandlocs]) + " " + country
+        print "Location string:", location
         coords = get_coordinates(location)
         if coords is not None:
             print location, "has coords at", coords
+            # TODO: manipulate URL based on domain so that they always link to images
             html = ("<h3><a href='{0}'>{1}</a></h3>" +
                     "<div><a href='http://www.reddit.com/r/{2}'>/r/{2}</a></div>" +
                     "<img alt='{3}' src='{0}' class='featured-img'>").format(post.url,
@@ -88,6 +102,7 @@ def get_data(limit):
             ret.append(append)
         else:
             print "Cannot find coords for search query", location
+        print ""
     print "Finished fetching Reddit posts"
     return ret
 
