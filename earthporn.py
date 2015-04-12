@@ -6,11 +6,23 @@ from subreddits import known
 import praw
 import HTMLParser
 import urllib, urllib2, urlparse
+from alchemyapi import AlchemyAPI
 import json
-from bs4 import BeautifulSoup
-r = praw.Reddit(user_agent="example")
+
+r = praw.Reddit(user_agent="earthporn_maps")
 h = HTMLParser.HTMLParser()
 API_KEY = "AIzaSyDBOe7KSp2n0VAd8XONeS60KcVLeHeuBRk"
+alchemyapi = AlchemyAPI()
+ACCEPTED_ENTITY_TYPES = [
+    "City",
+    "Company",
+    "Continent",
+    "Country",
+    "GeographicFeature",
+    "Organization",
+    "Region",
+    "StateOrCounty"
+]
 
 def get_hot_posts(LIMIT=10):
     ret = []
@@ -20,28 +32,22 @@ def get_hot_posts(LIMIT=10):
         ret.append(item)
     return ret
 
+def get_entities(phrase):
+    res = alchemyapi.entities("text", phrase)
+    ret = []
+    for entity in res['entities']:
+        if entity['type'] in ACCEPTED_ENTITY_TYPES:
+            ret.append(entity)
+    return ret
 
-def get_nlp(phrase):
-    URL = "http://nlp.stanford.edu:8080/ner/process"
-    params = {"classifier": "english.muc.7class.distsim.crf.ser.gz",
-              "outputFormat": "inlineXML", "preserveSpacing": "true",
-              "input": phrase, "Process": "Submit Query"}
-
-    url_parts = list(urlparse.urlparse(URL))
-    query = dict(urlparse.parse_qsl(url_parts[4]))
-    query.update(params)
-    for k, v in query.iteritems():
-        query[k] = unicode(v).encode("utf-8")
-    url_parts[4] = urllib.urlencode(query)
-    URL = urlparse.urlunparse(url_parts)
-
-    connection = urllib2.urlopen(URL)
-    html = connection.read()
-    connection.close()
-
-    start = html.find("&lt;")
-    end = html.find('<div id="Footer">')
-    return BeautifulSoup("<xml>" + h.unescape(html[start:end]).rstrip() + "</xml>", "html.parser")
+def parse_search_query(entity_list):
+    ret = []
+    for entity in entity_list:
+        if 'disambiguation' in entity.keys():
+            ret.append(entity['disambiguation']['name'])
+        else:
+            ret.append(entity['text'])
+    return ret
 
 def get_coordinates(location):
     URL = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -72,45 +78,61 @@ def get_data(limit):
     for post in get_hot_posts(limit):
         print "Processing:", post.title, ("-- from /r/" + post.subreddit.__str__())
         append = []
-        nlp = get_nlp(post.title)
-        orgsandlocs = nlp.find_all(["organization", "location"])
-        # insert country based on subreddit
-        country = ""
+        entity_list = get_entities(post.title)
+        entities = parse_search_query(entity_list)
+        # append country name if necessary
         if post.subreddit.__str__() in known:
+            country = post.subreddit.__str__()
             print "Found a country-related subreddit:", country
-            if country in orgsandlocs:
+            if country in entities:
                 print "Not necessary to add country to location string"
             else:
                 print "Adding country to location string"
-                country = known[post.subreddit.__str__()]
-        # find coords
-        location = " ".join([e.string for e in orgsandlocs]) + " " + country
-        print "Location string:", location
-        coords = get_coordinates(location)
+                entities.append(known[country])
+        search_query = " ".join(entities)
+        # find coords or else calls Google Reverse Geocoding API
+        coords = None
+        for entity in entity_list:
+            if 'disambiguation' in entity.keys() and 'geo' in entity['disambiguation'].keys():
+                coords = entity['disambiguation'].split(' ')
+                coords = {"lat": coords[0], "lng": coords[1]}
+                print "Geographics coords found with Alchemy API:", coords
+            else:
+                coords = get_coordinates(search_query)
         if coords is not None:
-            print location, "has coords at", coords
+            print search_query, "has coords at", coords
             # TODO: manipulate URL based on domain so that they always link to images
             html = ("<h3><a href='{0}'>{1}</a></h3>" +
                     "<div><a href='http://www.reddit.com/r/{2}'>/r/{2}</a></div>" +
                     "<img alt='{3}' src='{0}' class='featured-img'>").format(post.url,
                                                                              unicode(post.title).encode("ascii", "xmlcharrefreplace"),
                                                                              post.subreddit.__str__(),
-                                                                             unicode(location).encode("ascii", "xmlcharrefreplace"))
+                                                                             unicode(search_query).encode("ascii", "xmlcharrefreplace"))
             append.append(html)
             append.append(coords["lat"])
             append.append(coords["lng"])
             ret.append(append)
         else:
-            print "Cannot find coords for search query", location
+            print "Cannot find coords for search query", search_query
         print ""
     print "Finished fetching Reddit posts"
     return ret
 
 def test():
     for post in get_hot_posts():
-        nlp = get_nlp(post.title)
+        entity_list = get_entities(post.title)
+        entities = parse_search_query(entity_list)
+        if post.subreddit.__str__() in known:
+            country = post.subreddit.__str__()
+            print "Found a country-related subreddit:", country
+            if country in entities:
+                print "Not necessary to add country to location string"
+            else:
+                print "Adding country to location string"
+                entities.append(known[country])
+        search_query = " ".join(entities)
         print "Title:", post.title
-        print "Location Query:", get_locations(nlp)
-        print "URL: ", post.url
-        print get_coordinates(get_locations(nlp))
+        print "URL:", post.url
+        print "Subreddit:", post.subreddit
+        print "Search Query:", search_query
         print ""
