@@ -102,8 +102,8 @@ def get_data(limit):
         if coords is not None:
             print search_query, "has coords at", coords
             # TODO: manipulate URL based on domain so that they always link to images
-            html = ("<h3><a href='{0}'>{1}</a></h3>" +
-                    "<div><a href='http://www.reddit.com/r/{2}'>/r/{2}</a></div>" +
+            html = ("<h3><a target='_blank' href='{0}'>{1}</a></h3>" +
+                    "<div><a target='_blank' href='http://www.reddit.com/r/{2}'>/r/{2}</a></div>" +
                     "<img alt='{3}' src='{0}' class='featured-img'>").format(post.url,
                                                                              unicode(post.title).encode("ascii", "xmlcharrefreplace"),
                                                                              post.subreddit.__str__(),
