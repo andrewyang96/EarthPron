@@ -76,7 +76,7 @@ def get_data(limit):
     print "Fetching Reddit posts"
     print "-"*80
     for post in get_hot_posts(limit):
-        print "Processing:", post.title, ("-- from /r/" + post.subreddit.__str__())
+        print "Processing:", unicode(post.title).encode("utf-8"), ("-- from /r/" + post.subreddit.__str__())
         append = []
         entity_list = get_entities(post.title)
         entities = parse_search_query(entity_list)
@@ -100,7 +100,7 @@ def get_data(limit):
             else:
                 coords = get_coordinates(search_query)
         if coords is not None:
-            print search_query, "has coords at", coords
+            print unicode(search_query).encode("utf-8"), "has coords at", coords
             # TODO: manipulate URL based on domain so that they always link to images
             html = ("<h3><a target='_blank' href='{0}'>{1}</a></h3>" +
                     "<div><a target='_blank' href='http://www.reddit.com/r/{2}'>/r/{2}</a></div>" +
