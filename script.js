@@ -59,6 +59,7 @@ function showGoogleMaps(locations) {
 
 $(document).ready(function () {
 	$.getJSON("/earthporn.json", function (data) {
-		showGoogleMaps(data);
+		$("#timestamp").html(moment(data["timestamp"], "YYYY-MM-DD hh:mm:ss.aaaa Z").fromNow());
+		showGoogleMaps(data["data"]);
 	});
 });

@@ -67,6 +67,7 @@ def get_coordinates(location):
     j = json.loads(stuff)
     if (j["status"] == "ZERO_RESULTS"):
         return None
+    # print j # POSSIBLE IndexError
     return j["results"][0]["geometry"]["location"]
 
 def get_data(limit):
@@ -116,7 +117,7 @@ def get_data(limit):
             print "Cannot find coords for search query", search_query
         print ""
     print "Finished fetching Reddit posts"
-    return ret
+    return {"data": ret, "timestamp": datetime.datetime.utcnow().__str__() + "+0000"}
 
 def test():
     for post in get_hot_posts():
