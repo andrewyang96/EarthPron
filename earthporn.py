@@ -8,6 +8,9 @@ import HTMLParser
 import urllib, urllib2, urlparse
 from alchemyapi import AlchemyAPI
 import json
+import urllib2
+from bs4 import BeautifulSoup
+import os
 
 r = praw.Reddit(user_agent="earthporn_maps")
 h = HTMLParser.HTMLParser()
@@ -103,9 +106,10 @@ def get_data(limit):
         if coords is not None:
             print unicode(search_query).encode("utf-8"), "has coords at", coords
             # TODO: manipulate URL based on domain so that they always link to images
+            imgurl = get_url(post.url)
             html = ("<h3><a target='_blank' href='{0}'>{1}</a></h3>" +
                     "<div><a target='_blank' href='http://www.reddit.com/r/{2}'>/r/{2}</a></div>" +
-                    "<img alt='{3}' src='{0}' class='featured-img'>").format(post.url,
+                    "<img alt='{3}' src='{0}' class='featured-img'>").format(imgurl,
                                                                              unicode(post.title).encode("ascii", "xmlcharrefreplace"),
                                                                              post.subreddit.__str__(),
                                                                              unicode(search_query).encode("ascii", "xmlcharrefreplace"))
@@ -118,6 +122,35 @@ def get_data(limit):
         print ""
     print "Finished fetching Reddit posts"
     return {"data": ret, "timestamp": datetime.datetime.utcnow().__str__() + "+0000"}
+
+def get_url(url):
+    urlcomponents = urlparse.urlparse(url)
+    netloc = urlcomponents[1]
+    if netloc == "www.flickr.com":
+        print "The URL is a Flickr URL. Changing..."
+        connection = urllib2.urlopen(url)
+        soup = BeautifulSoup(connection)
+        connection.close()
+        # Find #image-src tag and take its href attribute
+        return soup.find(id="image-src")["href"]
+    elif netloc == "imgur.com":
+        old_path = urlcomponents[2]
+        if "gallery" in old_path:
+            print "The URL is an Imgur gallery URL. Changing..."
+            # TODO: Show multiple pictures in Imgur gallery
+            urlcomponents = urlcomponents._replace(netloc="i.imgur.com")
+            pathcomponents = old_path['/']
+            # Remove "/gallery/" part of path component
+            urlcomponents = urlcomponents._replace(path=pathcomponents[-1]+".jpg")
+            return urlparse.urlunparse(urlcomponents)
+        else:
+            print "The URL is a plain Imgur URL. Changing..."
+            # Change netloc to "i.imgur.com" and append ".jpg" to path
+            urlcomponents = urlcomponents._replace(netloc="i.imgur.com")
+            urlcomponents = urlcomponents._replace(path=old_path+".jpg")
+            return urlparse.urlunparse(urlcomponents)
+    else:
+        return url
 
 def test():
     for post in get_hot_posts():
