@@ -1,4 +1,6 @@
 # EarthPron
-Tag hot posts in /r/earthporn and related subreddits and map them onto a webpage with Google maps background. Uses Stanford University's Name Entity Recognizer to parse relevant words in post titles.
+Fetches hot posts in /r/earthporn and related subreddits and maps them onto a webpage with Google maps background. Uses [Alchemy API](http://www.alchemyapi.com/) to parse relevant entities in post titles and feeds them to Google's Geocoding API to fetch coordinates that appear on the map.
+
+Multireddit: [http://www.reddit.com/user/theyangmaster/m/earthporns]()
 
 Website: [http://earthpron.rocks]()
