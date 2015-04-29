@@ -106,18 +106,22 @@ def get_data(limit):
             else:
                 coords = get_coordinates(search_query)
         if coords is not None:
-            print unicode(search_query).encode("utf-8"), "has coords at", coords
-            imgurl = get_url(post.url)
-            html = ("<h3><a target='_blank' href='{0}'>{2}</a></h3>" +
-                    "<div><a target='_blank' href='http://www.reddit.com/r/{3}'>/r/{3}</a></div>" +
-                    "<img alt='{4}' src='{1}' class='featured-img'>").format(post.url, imgurl,
-                                                                             unicode(post.title).encode("ascii", "xmlcharrefreplace"),
-                                                                             post.subreddit.__str__(),
-                                                                             unicode(search_query).encode("ascii", "xmlcharrefreplace"))
-            append.append(html)
-            append.append(coords["lat"])
-            append.append(coords["lng"])
-            ret.append(append)
+            try:
+                print unicode(search_query).encode("utf-8"), "has coords at", coords
+                imgurl = get_url(post.url)
+                html = ("<h3><a target='_blank' href='{0}'>{2}</a></h3>" +
+                        "<div><a target='_blank' href='http://www.reddit.com/r/{3}'>/r/{3}</a></div>" +
+                        "<img alt='{4}' src='{1}' class='featured-img'>").format(post.url, imgurl,
+                                                                                 unicode(post.title).encode("ascii", "xmlcharrefreplace"),
+                                                                                 post.subreddit.__str__(),
+                                                                                 unicode(search_query).encode("ascii", "xmlcharrefreplace"))
+                append.append(html)
+                append.append(coords["lat"])
+                append.append(coords["lng"])
+                ret.append(append)
+            except Exception as e:
+                print "Error fetching coordinates. Error printed below:"
+                print e
         else:
             print "Cannot find coords for search query", search_query
         print ""
@@ -133,7 +137,7 @@ def get_url(url):
         soup = BeautifulSoup(connection)
         connection.close()
         # Find #image-src tag and take its href attribute
-        return soup.find(id="image-src")["href"]
+        return soup.find(id="image-src")["href"] # NOTE: sometimes there's a TypeError
     elif netloc == "imgur.com":
         old_path = urlcomponents[2]
         if "a/" in old_path:
