@@ -39,6 +39,10 @@ def get_hot_posts(LIMIT=10):
 
 def get_entities(phrase):
     res = alchemyapi.entities("text", phrase)
+    if res['status'] == 'ERROR':
+        print "There has been an error. Printing response here:"
+        print res
+        # purposefully let crash with error
     ret = []
     for entity in res['entities']:
         if entity['type'] in ACCEPTED_ENTITY_TYPES:
