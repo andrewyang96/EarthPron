@@ -56,3 +56,4 @@ target/
 earthporn.json
 api_key.txt
 config.py
+venv/

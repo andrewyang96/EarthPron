@@ -1,18 +1,24 @@
-#!/usr/bin/env python
-# -*- coding: UTF-8 -*-
+"""EarthPron utility functions."""
 
-import datetime
-from subreddits import known
-from config import GOOGLE_API_KEY, IMGUR_API_KEY
-import praw
-import pyimgur
 import HTMLParser
-import urllib, urllib2, urlparse
-from alchemyapi import AlchemyAPI
+import datetime
 import json
+import urllib
 import urllib2
+import urlparse
+
+from alchemyapi import AlchemyAPI
+
 from bs4 import BeautifulSoup
-import os
+
+from config import GOOGLE_API_KEY
+from config import IMGUR_API_KEY
+
+import praw
+
+import pyimgur
+
+from subreddits import known
 
 r = praw.Reddit(user_agent="earthporn_maps")
 h = HTMLParser.HTMLParser()
@@ -29,6 +35,7 @@ ACCEPTED_ENTITY_TYPES = [
     "StateOrCounty"
 ]
 
+
 def get_hot_posts(LIMIT=10):
     ret = []
     hot_submissions = r.get_multireddit("theyangmaster", "earthporns").get_hot(limit=LIMIT)
@@ -36,6 +43,7 @@ def get_hot_posts(LIMIT=10):
         item.title = h.unescape(item.title)
         ret.append(item)
     return ret
+
 
 def get_entities(phrase):
     res = alchemyapi.entities("text", phrase)
@@ -49,6 +57,7 @@ def get_entities(phrase):
             ret.append(entity)
     return ret
 
+
 def parse_search_query(entity_list):
     ret = []
     for entity in entity_list:
@@ -57,6 +66,7 @@ def parse_search_query(entity_list):
         else:
             ret.append(entity['text'])
     return ret
+
 
 def get_coordinates(location):
     URL = "https://maps.googleapis.com/maps/api/geocode/json"
@@ -69,7 +79,7 @@ def get_coordinates(location):
         query[k] = unicode(v).encode("utf-8")
     url_parts[4] = urllib.urlencode(query)
     URL = urlparse.urlunparse(url_parts)
-    
+
     connection = urllib2.urlopen(URL)
     stuff = connection.read()
     connection.close()
@@ -78,6 +88,7 @@ def get_coordinates(location):
         return None
     # print j # POSSIBLE IndexError
     return j["results"][0]["geometry"]["location"]
+
 
 def get_data(limit):
     print "Time of execution:", datetime.datetime.now()
@@ -132,6 +143,7 @@ def get_data(limit):
     print "Finished fetching Reddit posts"
     return {"data": ret, "timestamp": datetime.datetime.utcnow().__str__() + "+0000"}
 
+
 def get_url(url):
     urlcomponents = urlparse.urlparse(url)
     netloc = urlcomponents[1]
@@ -157,6 +169,7 @@ def get_url(url):
             return urlparse.urlunparse(urlcomponents)
     else:
         return url
+
 
 def test():
     for post in get_hot_posts():
