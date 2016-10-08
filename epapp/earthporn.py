@@ -18,7 +18,7 @@ import praw
 
 import pyimgur
 
-from subreddits import known
+from subreddits import known_subreddits
 
 r = praw.Reddit(user_agent="earthporn_maps")
 h = HTMLParser.HTMLParser()
@@ -36,26 +36,24 @@ ACCEPTED_ENTITY_TYPES = [
 ]
 
 
-def get_hot_posts(LIMIT=10):
-    ret = []
-    hot_submissions = r.get_multireddit("theyangmaster", "earthporns").get_hot(limit=LIMIT)
+def get_hot_posts(limit=10):
+    """Fetch the hottest posts. Limit defaults to 10."""
+    multireddit = r.get_multireddit("theyangmaster", "earthporns")
+    hot_submissions = multireddit.get_hot(limit=limit)
     for item in hot_submissions:
         item.title = h.unescape(item.title)
-        ret.append(item)
-    return ret
+    return hot_submissions
 
 
-def get_entities(phrase):
+def get_entities_from_phrase(phrase):
+    """Fetch entity words from phrase via AlchemyAPI."""
     res = alchemyapi.entities("text", phrase)
     if res['status'] == 'ERROR':
         print "There has been an error. Printing response here:"
         print res
-        # purposefully let crash with error
-    ret = []
-    for entity in res['entities']:
-        if entity['type'] in ACCEPTED_ENTITY_TYPES:
-            ret.append(entity)
-    return ret
+        return []
+    return filter(lambda entity: entity['type'] in ACCEPTED_ENTITY_TYPES,
+                  res['entities'])
 
 
 def parse_search_query(entity_list):
@@ -69,18 +67,18 @@ def parse_search_query(entity_list):
 
 
 def get_coordinates(location):
-    URL = "https://maps.googleapis.com/maps/api/geocode/json"
-    params = {"address" : location, "key" : GOOGLE_API_KEY}
+    url = "https://maps.googleapis.com/maps/api/geocode/json"
+    params = {"address": location, "key": GOOGLE_API_KEY}
 
-    url_parts = list(urlparse.urlparse(URL))
+    url_parts = list(urlparse.urlparse(url))
     query = dict(urlparse.parse_qsl(url_parts[4]))
     query.update(params)
     for k, v in query.iteritems():
         query[k] = unicode(v).encode("utf-8")
     url_parts[4] = urllib.urlencode(query)
-    URL = urlparse.urlunparse(url_parts)
+    url = urlparse.urlunparse(url_parts)
 
-    connection = urllib2.urlopen(URL)
+    connection = urllib2.urlopen(url)
     stuff = connection.read()
     connection.close()
     j = json.loads(stuff)
@@ -88,6 +86,33 @@ def get_coordinates(location):
         return None
     # print j # POSSIBLE IndexError
     return j["results"][0]["geometry"]["location"]
+
+
+def get_url(url):
+    urlcomponents = urlparse.urlparse(url)
+    netloc = urlcomponents[1]
+    if netloc == "www.flickr.com":
+        print "The URL is a Flickr URL. Changing..."
+        connection = urllib2.urlopen(url)
+        soup = BeautifulSoup(connection)
+        connection.close()
+        # Find #image-src tag and take its href attribute
+        return soup.find(id="image-src")["href"] # NOTE: sometimes there's a TypeError
+    elif netloc == "imgur.com":
+        old_path = urlcomponents[2]
+        if "a/" in old_path:
+            print "The URL is an Imgur album URL. Changing..."
+            pathcomponents = old_path.split('/')
+            album = imgur.get_album(pathcomponents[-1])
+            return album.images[0].link
+        else:
+            print "The URL is a plain Imgur URL. Changing..."
+            # Change netloc to "i.imgur.com" and append ".jpg" to path
+            urlcomponents = urlcomponents._replace(netloc="i.imgur.com")
+            urlcomponents = urlcomponents._replace(path=old_path+".jpg")
+            return urlparse.urlunparse(urlcomponents)
+    else:
+        return url
 
 
 def get_data(limit):
@@ -99,17 +124,17 @@ def get_data(limit):
     for post in get_hot_posts(limit):
         print "Processing:", unicode(post.title).encode("utf-8"), ("-- from /r/" + post.subreddit.__str__())
         append = []
-        entity_list = get_entities(post.title)
+        entity_list = get_entities_from_phrase(post.title)
         entities = parse_search_query(entity_list)
         # append country name if necessary
-        if post.subreddit.__str__() in known:
+        if post.subreddit.__str__() in known_subreddits:
             country = post.subreddit.__str__()
             print "Found a country-related subreddit:", country
             if country in entities:
                 print "Not necessary to add country to location string"
             else:
                 print "Adding country to location string"
-                entities.append(known[country])
+                entities.append(known_subreddits[country])
         search_query = " ".join(entities)
         # find coords or else calls Google Reverse Geocoding API
         coords = None
@@ -144,45 +169,18 @@ def get_data(limit):
     return {"data": ret, "timestamp": datetime.datetime.utcnow().__str__() + "+0000"}
 
 
-def get_url(url):
-    urlcomponents = urlparse.urlparse(url)
-    netloc = urlcomponents[1]
-    if netloc == "www.flickr.com":
-        print "The URL is a Flickr URL. Changing..."
-        connection = urllib2.urlopen(url)
-        soup = BeautifulSoup(connection)
-        connection.close()
-        # Find #image-src tag and take its href attribute
-        return soup.find(id="image-src")["href"] # NOTE: sometimes there's a TypeError
-    elif netloc == "imgur.com":
-        old_path = urlcomponents[2]
-        if "a/" in old_path:
-            print "The URL is an Imgur album URL. Changing..."
-            pathcomponents = old_path.split('/')
-            album = imgur.get_album(pathcomponents[-1])
-            return album.images[0].link
-        else:
-            print "The URL is a plain Imgur URL. Changing..."
-            # Change netloc to "i.imgur.com" and append ".jpg" to path
-            urlcomponents = urlcomponents._replace(netloc="i.imgur.com")
-            urlcomponents = urlcomponents._replace(path=old_path+".jpg")
-            return urlparse.urlunparse(urlcomponents)
-    else:
-        return url
-
-
 def test():
     for post in get_hot_posts():
-        entity_list = get_entities(post.title)
+        entity_list = get_entities_from_phrase(post.title)
         entities = parse_search_query(entity_list)
-        if post.subreddit.__str__() in known:
+        if post.subreddit.__str__() in known_subreddits:
             country = post.subreddit.__str__()
             print "Found a country-related subreddit:", country
             if country in entities:
                 print "Not necessary to add country to location string"
             else:
                 print "Adding country to location string"
-                entities.append(known[country])
+                entities.append(known_subreddits[country])
         search_query = " ".join(entities)
         print "Title:", post.title
         print "URL:", post.url
