@@ -119,6 +119,7 @@ def extract_image_url(url):
         old_path = urlcomponents[2]
         urlcomponents = urlcomponents._replace(
             netloc='thumbs.gfycat.com', path=old_path + '-size_restricted.gif')
+        return urlparse.urlunparse(urlcomponents)
     else:
         return url
 
