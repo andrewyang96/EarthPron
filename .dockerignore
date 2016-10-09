@@ -1,0 +1,7 @@
+.git
+Dockerfile
+LICENSE
+README.md
+
+*/.gitignore
+*/*.db
