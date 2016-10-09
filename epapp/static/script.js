@@ -35,7 +35,7 @@ function showGoogleMaps(locations) {
     // Add the markers and infowindows to the map
     for (var i = 0; i < locations.length; i++) {  
         var marker = new google.maps.Marker({
-            position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+            position: new google.maps.LatLng(locations[i]['lat'], locations[i]['lng']),
             map: map,
             icon: icons[iconCounter]
         });
@@ -44,7 +44,7 @@ function showGoogleMaps(locations) {
 
         google.maps.event.addListener(marker, 'click', (function(marker, i) {
             return function() {
-                infowindow.setContent(locations[i][0]);
+                infowindow.setContent(generateContent(locations[i]));
                     infowindow.open(map, marker);
                 }
         })(marker, i));
@@ -55,6 +55,12 @@ function showGoogleMaps(locations) {
       		iconCounter = 0;
       	}
     }
+}
+
+function generateContent(location) {
+    return '<h3><a target="_blank" href="' + location.url + '">' + location.title + '</a></h3>' +
+    '<div><a target="_blank" href="http://www.reddit.com/r/' + location.subreddit + '">/r/' + location.subreddit + '</a></div>' +
+    '<img alt="' + location.query + '" src="' + location.image_url + '" class="featured-img">';
 }
 
 $(document).ready(function () {
