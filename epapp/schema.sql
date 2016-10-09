@@ -9,3 +9,8 @@ CREATE TABLE hot_posts(
     lng         REAL NOT NULL,
     PRIMARY KEY (url, created_utc)
 );
+
+CREATE TABLE update_history(
+    timestamp   INT NOT NULL,
+    posts_added INT NOT NULL
+);

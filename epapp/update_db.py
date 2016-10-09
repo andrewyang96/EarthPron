@@ -2,12 +2,17 @@
 
 import datetime
 import sqlite3
+import time
 
 from earthpron import get_hot_posts
 from earthpron import process_post
 
 DATABASE_NAME = 'earthpron.db'
 POST_LIMIT = 25
+
+
+def get_current_time():
+    return int(time.mktime(datetime.datetime.utcnow().timetuple()))
 
 
 if __name__ == '__main__':
@@ -52,6 +57,9 @@ if __name__ == '__main__':
                 ''', (post_obj,))
                 print 'Insert command executed'
 
+    c.execute(
+        'INSERT INTO update_history (timestamp, posts_added) VALUES (?, ?)',
+        (get_current_time(), num_new_posts))
     db.commit()
     print 'Everything committed to database. Added', num_new_posts, 'new posts'
 

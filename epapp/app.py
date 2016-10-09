@@ -40,11 +40,14 @@ def data():
     results = c.execute('SELECT * FROM hot_posts WHERE created_utc>? LIMIT 25',
                         (get_current_time() - ONE_WEEK,)).fetchall()
     column_names = tuple(description[0] for description in c.description)
+    last_updated = c.execute(
+        'SELECT MAX(timestamp) FROM update_history').fetchone()[0]
     c.close()
     return jsonify({
         'results': map(
             lambda result: dict(zip(column_names, result)), results),
-        'count': len(results)
+        'count': len(results),
+        'last_updated': last_updated
     })
 
 
