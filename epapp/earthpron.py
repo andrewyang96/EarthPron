@@ -48,7 +48,7 @@ def get_hot_posts(limit=10):
 
 def get_entities_from_phrase(phrase):
     """Fetch entity objects from phrase via AlchemyAPI."""
-    res = alchemyapi.entities('text', phrase)
+    res = alchemyapi.entities('text', phrase, {'language': 'english'})
     if res['status'] == 'ERROR':
         print 'There has been an error. Printing response here:'
         print res
