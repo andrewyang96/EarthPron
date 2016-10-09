@@ -1,4 +1,4 @@
-known = {
+known_subreddits = {
     "AustraliaPics": "Australia",
     "britpics": "Great Britain",
     "ChinaPics": "China",
