@@ -19,6 +19,7 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
+        db.row_factory = sqlite3.Row
     return db
 
 
@@ -35,7 +36,7 @@ def index():
 
 @app.route('/data')
 def data():
-    c = get_db()
+    c = get_db().cursor()
     results = c.execute('SELECT * FROM hot_posts WHERE created_utc>? LIMIT 25',
                         (get_current_time() - ONE_WEEK,)).fetchall()
     c.close()
