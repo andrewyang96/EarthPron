@@ -5,5 +5,7 @@ CREATE TABLE hot_posts(
     subreddit   TEXT NOT NULL,
     query       TEXT NOT NULL,
     created_utc INT NOT NULL,
+    lat         REAL NOT NULL,
+    lng         REAL NOT NULL,
     PRIMARY KEY (url, created_utc)
 );

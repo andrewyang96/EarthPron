@@ -153,6 +153,8 @@ def process_post(post):
                                                     'xmlcharrefreplace'),
                 'subreddit': post.subreddit.__str__(),
                 'query': unicode(query).encode('ascii', 'xmlcharrefreplace'),
+                'lat': coords['lat'],
+                'lng': coords['lng'],
                 'created_utc': int(post.created_utc)
             }
         except Exception as e:
