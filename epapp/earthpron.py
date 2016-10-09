@@ -145,15 +145,15 @@ def process_post(post):
     else:
         try:
             print unicode(query).encode('utf-8'), 'has coords at', coords
-            img_url = extract_image_url(post.url)
+            image_url = extract_image_url(post.url)
             return {
                 'url': post.url,
-                'img_url': img_url,
+                'image_url': image_url,
                 'title': unicode(post.title).encode('ascii',
                                                     'xmlcharrefreplace'),
                 'subreddit': post.subreddit.__str__(),
                 'query': unicode(query).encode('ascii', 'xmlcharrefreplace'),
-                'created_utc': post.created_utc
+                'created_utc': int(post.created_utc)
             }
         except Exception as e:
             print 'An error occurred'
