@@ -20,7 +20,6 @@ if __name__ == '__main__':
     print 'Found', len(hot_posts), 'potential posts to add'
 
     db = sqlite3.connect(DATABASE_NAME)
-    db.row_factory = sqlite3.Row
     c = db.cursor()
     print 'Opened database connection'
 
@@ -46,10 +45,10 @@ if __name__ == '__main__':
                 c.executemany('''
                 INSERT INTO hot_posts
                 (url, image_url, title, subreddit,
-                    query, lat, lng, created_utc)
+                    query, created_utc, lat, lng)
                 VALUES
                 (:url, :image_url, :title, :subreddit,
-                    :query, :lat, :lng, :created_utc)
+                    :query, :created_utc, :lat, :lng)
                 ''', (post_obj,))
                 print 'Insert command executed'
 
