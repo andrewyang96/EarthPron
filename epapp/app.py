@@ -39,8 +39,13 @@ def data():
     c = get_db().cursor()
     results = c.execute('SELECT * FROM hot_posts WHERE created_utc>? LIMIT 25',
                         (get_current_time() - ONE_WEEK,)).fetchall()
+    column_names = tuple(description[0] for description in c.description)
     c.close()
-    return jsonify({'results': results})
+    return jsonify({
+        'results': map(
+            lambda result: dict(zip(column_names, result)), results),
+        'count': len(results)
+    })
 
 
 @app.teardown_appcontext
