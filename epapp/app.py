@@ -1,8 +1,8 @@
 """Entry point for EarthPron app."""
 
-import datetime
 import sqlite3
 import time
+from datetime import datetime
 
 from flask import Flask
 from flask import g
@@ -24,7 +24,7 @@ def get_db():
 
 
 def get_current_time():
-    return int(time.mktime(datetime.datetime.utcnow().timetuple()))
+    return int(time.mktime(datetime.utcnow().timetuple()))
 
 
 @app.route('/')

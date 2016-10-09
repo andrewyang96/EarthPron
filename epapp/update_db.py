@@ -1,8 +1,8 @@
 """Script to update hot posts in the database."""
 
-import datetime
 import sqlite3
 import time
+from datetime import datetime
 
 from earthpron import get_hot_posts
 from earthpron import process_post
@@ -12,11 +12,11 @@ POST_LIMIT = 25
 
 
 def get_current_time():
-    return int(time.mktime(datetime.datetime.utcnow().timetuple()))
+    return int(time.mktime(datetime.utcnow().timetuple()))
 
 
 if __name__ == '__main__':
-    print 'Time of execution (UTC):', datetime.datetime.utcnow()
+    print 'Time of execution (UTC):', datetime.utcnow()
     print 'Limit:', POST_LIMIT
     print 'Fetching Reddit posts...'
 
