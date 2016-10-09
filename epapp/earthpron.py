@@ -111,9 +111,14 @@ def extract_image_url(url):
             return album.images[0].link
         else:
             print 'The URL is a plain Imgur URL. Changing...'
-            urlcomponents = urlcomponents._replace(netloc='i.imgur.com')
-            urlcomponents = urlcomponents._replace(path=old_path + '.jpg')
+            urlcomponents = urlcomponents._replace(
+                netloc='i.imgur.com', path=old_path + '.jpg')
             return urlparse.urlunparse(urlcomponents)
+    elif netloc == 'gfycat.com':
+        print 'The URL is a Gfycat. Changing...'
+        old_path = urlcomponents[2]
+        urlcomponents = urlcomponents._replace(
+            netloc='thumbs.gfycat.com', path=old_path + '-size_restricted.gif')
     else:
         return url
 
