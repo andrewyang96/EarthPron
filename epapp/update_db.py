@@ -15,7 +15,7 @@ def get_current_time():
     return int(time.mktime(datetime.utcnow().timetuple()))
 
 
-if __name__ == '__main__':
+def update_db():
     print 'Time of execution (UTC):', datetime.utcnow()
     print 'Limit:', POST_LIMIT
     print 'Fetching Reddit posts...'

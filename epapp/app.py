@@ -4,11 +4,15 @@ import sqlite3
 import time
 from datetime import datetime
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from flask import Flask
 from flask import g
 from flask import jsonify
 from flask import render_template
 from flask import url_for
+
+from update_db import update_db
 
 app = Flask(__name__)
 DATABASE = 'earthpron.db'
@@ -59,4 +63,10 @@ def close_connection(exception):
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    scheduler = BackgroundScheduler()
+    scheduler.start()
+    scheduler.add_job(update_db, 'cron', hour='*')
+    try:
+        app.run(host='0.0.0.0', port=5000)
+    except (KeyboardInterrupt, SystemExit):
+        scheduler.shutdown()

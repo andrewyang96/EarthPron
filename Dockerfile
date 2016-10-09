@@ -14,7 +14,5 @@ RUN pip install -r requirements.txt
 WORKDIR /earthpron/epapp
 RUN sqlite3 earthpron.db < schema.sql
 
-RUN printf '* * * * * * python update_db.py >> /tmp/update_log 2>&1\n\n' > /etc/crontab
-
 ENTRYPOINT ["python"]
 CMD ["app.py"]
