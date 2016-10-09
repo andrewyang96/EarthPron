@@ -11,14 +11,16 @@ from alchemyapi import AlchemyAPI
 
 from bs4 import BeautifulSoup
 
-from config import GOOGLE_API_KEY
-from config import IMGUR_API_KEY
-
 import praw
 
 import pyimgur
 
 from subreddits import known_subreddits
+
+with open('config.json', 'r') as f:
+    config = json.load(f)
+    GOOGLE_API_KEY = config['GOOGLE_API_KEY']
+    IMGUR_API_KEY = config['IMGUR_API_KEY']
 
 r = praw.Reddit(user_agent='earthpron_rocks')
 h = HTMLParser.HTMLParser()
@@ -97,7 +99,7 @@ def extract_image_url(url):
     if netloc == 'www.flickr.com':
         print 'The URL is a Flickr URL. Changing...'
         connection = urllib2.urlopen(url)
-        soup = BeautifulSoup(connection)
+        soup = BeautifulSoup(connection, 'html.parser')
         connection.close()
         return soup.find(id='image-src')['href']
         # NOTE: sometimes there's a TypeError
@@ -121,6 +123,8 @@ def process_post(post):
     """Process a post object received from get_hot_posts."""
     print 'Processing:', unicode(post.title).encode('utf-8'), ('-- from /r/' + post.subreddit.__str__())
     entity_objs = get_entities_from_phrase(post.title)
+    if entity_objs == []:
+        return None
     entity_words = transform_entities_to_words(entity_objs)
 
     # append country name if necessary
@@ -142,19 +146,22 @@ def process_post(post):
         try:
             print unicode(query).encode('utf-8'), 'has coords at', coords
             img_url = extract_image_url(post.url)
+            return {
+                'url': post.url,
+                'img_url': img_url,
+                'title': unicode(post.title).encode('ascii', 'xmlcharrefreplace'),
+                'subreddit': post.subreddit.__str__(),
+                'query': unicode(query).encode('ascii', 'xmlcharrefreplace'),
+                'created_utc': post.created_utc
+            }
         except Exception as e:
             print 'An error occurred'
             print e
-        return {
-            'url': post.url,
-            'img_url': img_url,
-            'title': unicode(post.title).encode('ascii', 'xmlcharrefreplace'),
-            'subreddit': post.subreddit.__str__(),
-            'query': unicode(query).encode('ascii', 'xmlcharrefreplace')
-        }
+            return None
 
 
 def test():
+    """Dry run method."""
     hot_posts = get_hot_posts()
     results = filter(None, map(process_post, hot_posts))
-    print results
+    return results
