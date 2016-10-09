@@ -1,7 +1,6 @@
 """EarthPron utility functions."""
 
 import HTMLParser
-import datetime
 import json
 import urllib
 import urllib2
@@ -121,7 +120,8 @@ def extract_image_url(url):
 
 def process_post(post):
     """Process a post object received from get_hot_posts."""
-    print 'Processing:', unicode(post.title).encode('utf-8'), ('-- from /r/' + post.subreddit.__str__())
+    print 'Processing:', unicode(post.title).encode('utf-8'), (
+        '-- from /r/' + post.subreddit.__str__())
     entity_objs = get_entities_from_phrase(post.title)
     if entity_objs == []:
         return None
@@ -149,7 +149,8 @@ def process_post(post):
             return {
                 'url': post.url,
                 'img_url': img_url,
-                'title': unicode(post.title).encode('ascii', 'xmlcharrefreplace'),
+                'title': unicode(post.title).encode('ascii',
+                                                    'xmlcharrefreplace'),
                 'subreddit': post.subreddit.__str__(),
                 'query': unicode(query).encode('ascii', 'xmlcharrefreplace'),
                 'created_utc': post.created_utc
