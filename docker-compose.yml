@@ -1,0 +1,9 @@
+earthpronapp:
+  build: ./earthpronapp
+  ports:
+    - "80:5000"
+  links:
+    - database
+
+database:
+  build: ./database

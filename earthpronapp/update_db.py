@@ -1,30 +1,31 @@
 """Script to update hot posts in the database."""
 
-import sqlite3
-import time
+import psycopg2
 from datetime import datetime
+
+from app import get_current_time
+from app import DATABASE
+from app import DB_USERNAME
 
 from earthpron import get_hot_posts
 from earthpron import process_post
 
-DATABASE_NAME = 'earthpron.db'
 POST_LIMIT = 25
 
 
-def get_current_time():
-    return int(time.mktime(datetime.utcnow().timetuple()))
-
-
 def update_db():
+    """Update database method."""
     print 'Time of execution (UTC):', datetime.utcnow()
     print 'Limit:', POST_LIMIT
     print 'Fetching Reddit posts...'
 
+    db = psycopg2.connect(
+        'dbname={0} user={1} password={2}'.format(DATABASE, DB_USERNAME, '')
+    )
     hot_posts = get_hot_posts(POST_LIMIT)
     num_new_posts = 0
     print 'Found', len(hot_posts), 'potential posts to add'
 
-    db = sqlite3.connect(DATABASE_NAME)
     c = db.cursor()
     print 'Opened database connection'
 

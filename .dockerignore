@@ -4,4 +4,4 @@ LICENSE
 README.md
 
 */.gitignore
-*/*.db
+*/requirements.txt
