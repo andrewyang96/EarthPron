@@ -11,7 +11,7 @@ WORKDIR /earthpron
 
 RUN pip install -r requirements.txt
 
-WORKDIR /earthpron/epapp
+WORKDIR /earthpron/EarthPronApp
 RUN sqlite3 earthpron.db < schema.sql
 
 ENTRYPOINT ["python"]
