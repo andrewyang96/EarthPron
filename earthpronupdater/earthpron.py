@@ -24,7 +24,8 @@ with open('config.json', 'r') as f:
     REDDIT_CLIENT_ID = config['REDDIT_CLIENT_ID']
     REDDIT_CLIENT_SECRET = config['REDDIT_CLIENT_SECRET']
 
-r = praw.Reddit(client_id=REDDIT_CLIENT_ID, client_secret=REDDIT_CLIENT_SECRET)
+r = praw.Reddit(client_id=REDDIT_CLIENT_ID, client_secret=REDDIT_CLIENT_SECRET,
+                user_agent='earthpron_rocks')
 h = HTMLParser.HTMLParser()
 imgur = pyimgur.Imgur(
     client_id=IMGUR_CLIENT_ID, client_secret=IMGUR_CLIENT_SECRET)
@@ -43,8 +44,8 @@ ACCEPTED_ENTITY_TYPES = [
 
 def get_hot_posts(limit=10):
     """Fetch the hottest posts. Limit defaults to 10."""
-    multireddit = r.get_multireddit('theyangmaster', 'earthporns')
-    hot_submissions = list(multireddit.get_hot(limit=limit))
+    multireddit = r.multireddit('theyangmaster', 'earthporns')
+    hot_submissions = list(multireddit.hot(limit=limit))
     for item in hot_submissions:
         item.title = h.unescape(item.title)
     return hot_submissions
@@ -173,8 +174,8 @@ def process_post(post):
             return None
 
 
-def test():
+def test(limit=10):
     """Dry run method."""
-    hot_posts = get_hot_posts()
+    hot_posts = get_hot_posts(limit=limit)
     results = filter(None, map(process_post, hot_posts))
     return results
