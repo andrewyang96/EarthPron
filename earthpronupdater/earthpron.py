@@ -19,11 +19,15 @@ from subreddits import known_subreddits
 with open('config.json', 'r') as f:
     config = json.load(f)
     GOOGLE_API_KEY = config['GOOGLE_API_KEY']
-    IMGUR_API_KEY = config['IMGUR_API_KEY']
+    IMGUR_CLIENT_ID = config['IMGUR_CLIENT_ID']
+    IMGUR_CLIENT_SECRET = config['IMGUR_CLIENT_SECRET']
+    REDDIT_CLIENT_ID = config['REDDIT_CLIENT_ID']
+    REDDIT_CLIENT_SECRET = config['REDDIT_CLIENT_SECRET']
 
-r = praw.Reddit(user_agent='earthpron_rocks')
+r = praw.Reddit(client_id=REDDIT_CLIENT_ID, client_secret=REDDIT_CLIENT_SECRET)
 h = HTMLParser.HTMLParser()
-imgur = pyimgur.Imgur(IMGUR_API_KEY)
+imgur = pyimgur.Imgur(
+    client_id=IMGUR_CLIENT_ID, client_secret=IMGUR_CLIENT_SECRET)
 alchemyapi = AlchemyAPI()
 ACCEPTED_ENTITY_TYPES = [
     'City',
