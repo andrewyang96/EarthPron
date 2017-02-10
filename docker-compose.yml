@@ -5,5 +5,10 @@ earthpronapp:
   links:
     - database
 
+earthpronupdater:
+  build: ./earthpronupdater
+  links:
+    - database
+
 database:
   build: ./database
