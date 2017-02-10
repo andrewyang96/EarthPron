@@ -1,0 +1,1 @@
+0 * * * * root python /earthpronupdater/update_db.py >> /var/log/cron.log 2>&1

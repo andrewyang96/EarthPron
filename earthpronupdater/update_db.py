@@ -1,16 +1,20 @@
 """Script to update hot posts in the database."""
 
 import psycopg2
+import time
 from datetime import datetime
-
-from app import get_current_time
-from app import DATABASE
-from app import DB_USERNAME
 
 from earthpron import get_hot_posts
 from earthpron import process_post
 
 POST_LIMIT = 25
+DATABASE = 'earthpron'
+DB_USERNAME = 'postgres'
+
+
+def get_current_time():
+    """Get current UTC timestamp."""
+    return int(time.mktime(datetime.utcnow().timetuple()))
 
 
 def update_db():
