@@ -1,14 +1,35 @@
-earthpronapp:
-  build: ./earthpronapp
-  ports:
-    - "80:5000"
-  links:
-    - database
+version: '2'
 
-earthpronupdater:
-  build: ./earthpronupdater
-  links:
-    - database
+services:
+  earthpronapp:
+    build: ./earthpronapp
+    ports:
+      - "80:5000"
+    networks:
+      - front-tier
+      - back-tier
 
-database:
-  build: ./database
+  earthpronupdater:
+    build: ./earthpronupdater
+    restart: unless-stopped
+    environment:
+      TIMEZONE: Etc/UTC
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      deck-chores.dump.command: sh -c "echo $$(date -u)"
+      deck-chores.dump.interval: every minute
+    networks:
+      - front-tier
+      - back-tier
+
+  database:
+    build: ./database
+    networks:
+      - back-tier
+
+networks:
+  front-tier:
+    driver: bridge
+  back-tier:
+    driver: bridge
