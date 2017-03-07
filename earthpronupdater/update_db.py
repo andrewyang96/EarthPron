@@ -44,3 +44,7 @@ def update_db():
     cur.close()
     db.close()
     print()
+
+
+if __name__ == '__main__':
+    update_db()
